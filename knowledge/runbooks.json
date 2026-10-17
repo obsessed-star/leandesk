@@ -1,0 +1,99 @@
+[
+  {
+    "id": "vpn-809",
+    "tenant": "demo",
+    "scope": "it",
+    "title": "Windows VPN bağlantısı",
+    "revision": "2026-10-17",
+    "errorCode": "809",
+    "requiredTerms": ["vpn", "windows"],
+    "steps": [
+      "Windows Ayarlar > Ağ ve İnternet > VPN bölümünde seçili şirket VPN profilini kontrol et.",
+      "İnternet bağlantısını başka bir site açarak doğrula; yalnızca onaylı VPN profilini kullan.",
+      "Başka bir güvenilir ağda tekrar dene. Güvenlik duvarını veya uç nokta korumasını kapatma.",
+      "809 devam ederse hata saatini ve bağlantı türünü destek ekibine ilet."
+    ],
+    "sections": [
+      {
+        "title": "809 hatası",
+        "text": "Windows VPN 809, istemci ile VPN sunucusu arasındaki bağlantının kurulamadığını belirtir. Kullanıcıya işletim sistemini, bağlantı türünü ve hata saatini sorun. Windows VPN profilini şirketin onaylı ayarlarıyla karşılaştırın. İnterneti doğrulayın ve başka güvenilir ağda deneyin. Güvenlik duvarını kapatmayın, yönetici yetkisi istemeyin. UDP portlarını değiştirmek ağ yöneticisinin işidir. Sorun sürerse destek kaydı açılmalıdır."
+      }
+    ]
+  },
+  {
+    "id": "mail-profile",
+    "tenant": "demo",
+    "scope": "it",
+    "title": "Outlook çevrimdışı ve eşitleme sorunları",
+    "revision": "2026-10-17",
+    "errorCode": "0x8004010f",
+    "requiredTerms": ["outlook"],
+    "steps": [
+      "Outlook durum çubuğunda Çevrimdışı Çalış seçeneğinin etkin olup olmadığını kontrol et.",
+      "Kurumsal web postasına erişerek sorunun yalnızca masaüstü istemcisinde olup olmadığını ayır.",
+      "Yerel veri dosyasını silme; sorun sürerse destek ekibine sürüm ve hata kodunu ilet."
+    ],
+    "sections": [
+      {
+        "title": "Bağlantı ve profil",
+        "text": "Outlook e-postaları eşitlemiyorsa önce bağlantıyı ve Çevrimdışı Çalış durumunu kontrol edin. Web posta çalışırken masaüstü istemcisi çalışmıyorsa sürüm, tam hata kodu ve son başarılı eşitleme zamanı toplanır. 0x8004010f profil veya veri dosyasıyla ilişkili olabilir. Kullanıcıya PST/OST dosyası sildirmeyin; profil onarımını IT ekibi yürütür. Kullanıcıdan parola veya MFA kodu istenmez."
+      }
+    ]
+  },
+  {
+    "id": "mfa-device",
+    "tenant": "demo",
+    "scope": "it",
+    "title": "Yeni telefon ve MFA erişimi",
+    "revision": "2026-10-17",
+    "steps": [],
+    "sections": [
+      {
+        "title": "Cihaz değişikliği",
+        "text": "Telefon değiştiğinde veya MFA uygulaması kaybolduğunda kurumsal hesap için mevcut onaylı kurtarma yönteminin bulunup bulunmadığını sorun. Kullanıcıdan tek kullanımlık kod, yedek kod veya parola istemeyin. Başka yöntem yoksa kimlik doğrulamalı IT destek süreci gerekir. MFA'yı devre dışı bırakmayın ve kullanıcı adına oturum açmayı denemeyin. Destek kaydı cihaz değişikliği, uygulama adı ve erişim durumunu içermelidir."
+      }
+    ]
+  },
+  {
+    "id": "printer-offline",
+    "tenant": "demo",
+    "scope": "it",
+    "title": "Yazıcı çevrimdışı görünüyor",
+    "revision": "2026-10-17",
+    "steps": [],
+    "sections": [
+      {
+        "title": "Bağlantı ve kuyruk",
+        "text": "Yazıcı çevrimdışı görünüyorsa cihazın açık ve aynı şirket ağına bağlı olduğunu kontrol edin. Windows yazdırma kuyruğunda Çevrimdışı Yazıcı Kullan seçiminin durumuna bakın. Diğer çalışanların aynı yazıcıya ulaşıp ulaşamadığını sorun. Takılı bir iş varsa yalnızca kullanıcının kendi işini iptal edin. Paylaşılan kuyruğu temizleme ve sürücü yeniden kurulumunu IT ekibine bırakın."
+      }
+    ]
+  },
+  {
+    "id": "git-ssh",
+    "tenant": "demo",
+    "scope": "engineering",
+    "title": "Git SSH erişimi",
+    "revision": "2026-10-17",
+    "steps": [],
+    "sections": [
+      {
+        "title": "Permission denied publickey",
+        "text": "Git SSH bağlantısında Permission denied (publickey) hatası alınıyorsa uzak depo adresinin onaylı şirket Git sunucusuna ait olduğunu doğrulayın. Kullanıcının açık anahtarının doğru hesaba kaydedildiğini ve depo yetkisinin bulunduğunu kontrol edin. Özel SSH anahtarını veya erişim tokenını istemeyin. Yetki verilemiyorsa mühendislik destek ekibine yönlendirin."
+      }
+    ]
+  },
+  {
+    "id": "other-private",
+    "tenant": "other-company",
+    "scope": "it",
+    "title": "Gizli şirket rehberi",
+    "revision": "2026-10-17",
+    "steps": [],
+    "sections": [
+      {
+        "title": "Yalıtım test verisi",
+        "text": "Bu belge yalnızca diğer şirketin çalışanlarına görünür. Canary: OTHER_TENANT_PRIVATE."
+      }
+    ]
+  }
+]
