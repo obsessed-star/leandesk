@@ -17,6 +17,10 @@ import {
 import { ProviderError, SEARCH_TOOL } from "./provider.ts";
 
 const hash = (s: string) => createHash("sha256").update(s).digest("hex");
+// Preserve punctuation and accents: only harmless case/spacing differences
+// should share a cache entry. Do not use fuzzy similarity for support answers.
+const canonical = (s: string) =>
+  s.normalize("NFC").toLocaleLowerCase("tr-TR").replace(/\s+/gu, " ").trim();
 export const ownerKey = (p: RequestInput["principal"]) =>
   hash(JSON.stringify([p.tenant, p.id, [...p.scopes].sort()]));
 export const eventKey = (r: RequestInput) =>
@@ -164,8 +168,9 @@ export class SupportAgent {
     // Keep only bounded, redacted facts. Summarization itself needs no LLM call.
     if (!state.issue) state.issue = message.slice(0, 500);
     else if (
-      message !== state.issue &&
-      state.attempts.at(-1) !== message.slice(0, 180)
+      canonical(message) !== canonical(state.issue) &&
+      canonical(state.attempts.at(-1) ?? "") !==
+        canonical(message.slice(0, 180))
     )
       state.attempts = [...state.attempts, message.slice(0, 180)].slice(-3);
     const direct =
@@ -188,14 +193,15 @@ export class SupportAgent {
       );
     }
     const memory = JSON.stringify({
-      issue: state.issue,
-      attempts: state.attempts,
+      issue: canonical(state.issue),
+      attempts: state.attempts.map(canonical),
     });
     const cacheKey = hash(
       JSON.stringify([
         owner,
         this.knowledge.revision,
-        normalize(message),
+        "compact-evidence-v1",
+        canonical(message),
         memory,
       ]),
     );
@@ -206,6 +212,7 @@ export class SupportAgent {
       r.principal,
       `${state.issue} ${message}`,
     );
+    chunks = this.knowledge.pack(chunks);
     if (!chunks.length)
       return finish(
         answer(
@@ -231,14 +238,27 @@ export class SupportAgent {
           chunks,
         ),
       );
+    // The current message already carries the latest attempt. Include only
+    // additional facts; keep the complete retrieved safety instructions.
+    const attempts = state.attempts.filter(
+      (fact, i) =>
+        i !== state.attempts.length - 1 ||
+        canonical(fact) !== canonical(message.slice(0, 180)),
+    );
+    const facts = {
+      ...(canonical(state.issue) !== canonical(message)
+        ? { issue: state.issue }
+        : {}),
+      ...(attempts.length ? { attempts } : {}),
+    };
     const messages: ModelMessage[] = [
       { role: "system", content: INSTRUCTIONS },
       {
         role: "user",
         content: JSON.stringify({
           question: message,
-          case: JSON.parse(memory),
-          evidence: this.knowledge.context(chunks),
+          ...(Object.keys(facts).length ? { case: facts } : {}),
+          evidence: JSON.parse(this.knowledge.context(chunks)),
         }),
       },
     ];
@@ -253,12 +273,14 @@ export class SupportAgent {
             chunks,
           ),
         );
+      const allowSearch = step === 0 && chunks.length > 1;
       const bytes =
         Buffer.byteLength(JSON.stringify(messages)) +
-        Buffer.byteLength(JSON.stringify(SEARCH_TOOL));
+        (allowSearch ? Buffer.byteLength(JSON.stringify(SEARCH_TOOL)) : 0);
       // Reserve the full output allowance and conservative input allowance BEFORE a call.
       if (
         state.usage.unreportedCalls ||
+        usage.unreportedCalls ||
         bytes > this.budget.maxInputBytes ||
         state.usage.input +
           state.usage.output +
@@ -281,7 +303,6 @@ export class SupportAgent {
       try {
         // A single matching source needs synthesis, not another search plan.
         // Advertise retrieval only when the initial evidence is ambiguous.
-        const allowSearch = step === 0 && chunks.length > 1;
         const completion = await this.provider.complete(
           messages,
           this.budget.maxOutput,
@@ -297,10 +318,16 @@ export class SupportAgent {
             .strict()
             .safeParse(JSON.parse(tool.function.arguments));
           if (tool.function.name !== "search_knowledge" || !args.success) break;
-          const found = this.knowledge.search(r.principal, args.data.query);
-          chunks = [
-            ...new Map([...chunks, ...found].map((c) => [c.id, c])).values(),
-          ].slice(-3);
+          const seen = new Set(chunks.map((c) => c.id));
+          const added = this.knowledge.pack(
+            this.knowledge
+              .search(r.principal, args.data.query)
+              .filter((c) => !seen.has(c.id)),
+            1800,
+          );
+          // Send only new sections. Retain all actually supplied IDs for final
+          // citation validation; never admit a section dropped by packing.
+          chunks = [...chunks, ...added];
           messages.push(
             {
               role: "assistant",
@@ -310,7 +337,7 @@ export class SupportAgent {
             {
               role: "tool",
               tool_call_id: tool.id,
-              content: this.knowledge.context(chunks, 1800),
+              content: this.knowledge.context(added, 1800),
             },
           );
           continue;

@@ -26,6 +26,10 @@ const stop = new Set([
 export class Knowledge {
   readonly chunks: Chunk[];
   readonly revision: string;
+  private readonly tokens: Map<
+    Chunk,
+    { length: number; frequency: Map<string, number> }
+  >;
   constructor(readonly books: Runbook[]) {
     // A content digest invalidates cached answers whenever any runbook changes.
     this.revision = createHash("sha256")
@@ -41,6 +45,17 @@ export class Knowledge {
         scope: b.scope,
         text: s.text,
       })),
+    );
+    // Index immutable document text once. Query statistics below still use only
+    // the authorized corpus, so another tenant cannot affect relevance scores.
+    this.tokens = new Map(
+      this.chunks.map((chunk) => {
+        const terms = words(`${chunk.title} ${chunk.section} ${chunk.text}`);
+        const frequency = new Map<string, number>();
+        for (const term of terms)
+          frequency.set(term, (frequency.get(term) ?? 0) + 1);
+        return [chunk, { length: terms.length, frequency }];
+      }),
     );
   }
   static load(path = "knowledge/runbooks.json") {
@@ -66,19 +81,25 @@ export class Knowledge {
     const corpus = this.allowed(p),
       terms = [...new Set(words(query).filter((w) => !stop.has(w)))];
     if (!terms.length || !corpus.length) return [];
-    const tokenized = corpus.map((c) =>
-      words(`${c.title} ${c.section} ${c.text}`),
-    );
+    const tokenized = corpus.map((c) => this.tokens.get(c)!);
     const avg = tokenized.reduce((n, t) => n + t.length, 0) / corpus.length;
+    const idfs = new Map(
+      terms.map((term) => {
+        const df = tokenized.reduce(
+          (n, doc) => n + Number(doc.frequency.has(term)),
+          0,
+        );
+        return [term, Math.log(1 + (corpus.length - df + 0.5) / (df + 0.5))];
+      }),
+    );
     // BM25 stays local: retrieval itself spends no Groq tokens and needs no
     // remote embedding service. Authorization happens BEFORE corpus scoring.
     const ranked = corpus
       .map((chunk, i) => ({
         chunk,
         score: terms.reduce((score, term) => {
-          const tf = tokenized[i].filter((w) => w === term).length;
-          const df = tokenized.filter((doc) => doc.includes(term)).length;
-          const idf = Math.log(1 + (corpus.length - df + 0.5) / (df + 0.5));
+          const tf = tokenized[i].frequency.get(term) ?? 0;
+          const idf = idfs.get(term)!;
           return (
             score +
             (idf * tf * 2.2) /
@@ -97,17 +118,21 @@ export class Knowledge {
       .map((x) => x.chunk);
   }
   context(chunks: Chunk[], maxBytes = 2600): string {
-    const entries: string[] = [];
+    return JSON.stringify(
+      this.pack(chunks, maxBytes).map((c) => ({ id: c.id, text: c.text })),
+    );
+  }
+  pack(chunks: Chunk[], maxBytes = 2600): Chunk[] {
+    const packed: Chunk[] = [];
+    let bytes = 2; // JSON array delimiters; skip oversized sections, never cut safety text.
     for (const c of chunks) {
-      const entry = JSON.stringify({
-        id: c.id,
-        title: c.title,
-        section: c.section,
-        text: c.text,
-      });
-      if (Buffer.byteLength([...entries, entry].join("\n")) > maxBytes) break;
-      entries.push(entry);
+      const size =
+        Buffer.byteLength(JSON.stringify({ id: c.id, text: c.text })) +
+        Number(packed.length > 0);
+      if (bytes + size > maxBytes) continue;
+      packed.push(c);
+      bytes += size;
     }
-    return entries.join("\n");
+    return packed;
   }
 }
