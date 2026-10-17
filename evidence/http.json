@@ -1,0 +1,94 @@
+{
+  "routes": [
+    {
+      "route": "/healthz",
+      "status": 200
+    },
+    {
+      "route": "/api/messages",
+      "status": 404
+    },
+    {
+      "route": "/eve/v1/telegram",
+      "status": 404
+    },
+    {
+      "route": "/eve/v1/whatsapp",
+      "status": 503
+    },
+    {
+      "route": "/eve/v1/session",
+      "status": 404
+    }
+  ],
+  "first": {
+    "route": "runbook",
+    "text": "1. Windows Ayarlar > Ağ ve İnternet > VPN bölümünde seçili şirket VPN profilini kontrol et.\n2. İnternet bağlantısını başka bir site açarak doğrula; yalnızca onaylı VPN profilini kullan.\n3. Başka bir güvenilir ağda tekrar dene. Güvenlik duvarını veya uç nokta korumasını kapatma.\n4. 809 devam ederse hata saatini ve bağlantı türünü destek ekibine ilet.\nSonucu bildir; düzelmezse /ticket ile taslak oluşturabiliriz.",
+    "usage": {
+      "input": 0,
+      "output": 0,
+      "cachedInput": 0,
+      "calls": 0
+    },
+    "citations": [
+      {
+        "id": "vpn-809:1",
+        "title": "Windows VPN bağlantısı",
+        "section": "809 hatası",
+        "revision": "2026-10-17"
+      }
+    ]
+  },
+  "replay": {
+    "route": "runbook",
+    "text": "1. Windows Ayarlar > Ağ ve İnternet > VPN bölümünde seçili şirket VPN profilini kontrol et.\n2. İnternet bağlantısını başka bir site açarak doğrula; yalnızca onaylı VPN profilini kullan.\n3. Başka bir güvenilir ağda tekrar dene. Güvenlik duvarını veya uç nokta korumasını kapatma.\n4. 809 devam ederse hata saatini ve bağlantı türünü destek ekibine ilet.\nSonucu bildir; düzelmezse /ticket ile taslak oluşturabiliriz.",
+    "usage": {
+      "input": 0,
+      "output": 0,
+      "cachedInput": 0,
+      "calls": 0
+    },
+    "citations": [
+      {
+        "id": "vpn-809:1",
+        "title": "Windows VPN bağlantısı",
+        "section": "809 hatası",
+        "revision": "2026-10-17"
+      }
+    ],
+    "replayed": true
+  },
+  "host": "local built eve server",
+  "measuredAt": "2026-10-17T11:38:17.8020599Z",
+  "checkedRequests": [
+    {
+      "method": "POST",
+      "status": 503,
+      "route": "/eve/v1/telegram"
+    },
+    {
+      "method": "POST",
+      "status": 404,
+      "route": "/eve/v1/session"
+    },
+    {
+      "method": "POST unauthenticated",
+      "status": 401,
+      "route": "/api/messages"
+    }
+  ],
+  "ownerMetrics": {
+    "metrics": [
+      {
+        "route": "runbook",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cachedInput": 0,
+          "calls": 0
+        },
+        "created": 1792237085423
+      }
+    ]
+  }
+}
