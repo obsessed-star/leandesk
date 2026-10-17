@@ -57,6 +57,27 @@ Vaka belleği ilk sorun ve son üç denemeyle sınırlıdır; LLM özetleme ça�
 
 Bu küçük örnekte **%73,3 daha az token** kullanıldı. Model `qwen/qwen3.8-27b`, tarih 17 Ekim 2026. Bu sonuç üretim çözüm oranını veya her soruda aynı tasarrufu kanıtlamaz. `npm run live` kota harcayan yeni bir ölçüm yapar; anahtarı ortamdan veya gizli yerel girişten alır. `npm run evaluate` dört sentetik arama vakasını model çağırmadan sınar.
 
+## İkinci verim iyileştirmesi
+
+Güncel sürüm soruyu ve son denemeyi bağlama iki kez eklemez. Kaynaklar yalnızca kimlik ve **tam bölüm metni** içeren JSON dizisi olarak gönderilir; güvenlik yönergeleri kesilmez. İkinci araç yanıtı yalnızca yeni kaynakları taşır. Büyük/küçük harf ve boşluk farkları aynı önbelleği kullanır; farklı olgular, kullanıcılar veya yetkiler birleştirilmez.
+
+[Anahtarsız karşılaştırma](evidence/efficiency-v2.json), önceki `c946a33` sürümüne karşı aynı sentetik girdilerle:
+
+| Ölçüm                                                 |       Önce |                     Şimdi |
+| ----------------------------------------------------- | ---------: | ------------------------: |
+| İlk MFA isteğinin içerik boyutu                       | 1.541 byte | 1.334 byte (%13,4 azalma) |
+| Aynı sorunun üç harf/boşluk varyantında model çağrısı |          3 |                         1 |
+| Araç aramalı akışın toplam içerik boyutu              | 5.860 byte |                4.079 byte |
+| 800 belgede sıcak arama medyanı                       | 223,383 ms |                  1,279 ms |
+
+Bu ölçüm taklit sağlayıcıyla **istek byte'larını ve çağrı sayısını** ölçer; yeni canlı token veya yanıt kalitesi ölçümü değildir. Arama süresi bu makinedeki yedi sıcak çalıştırmanın medyanıdır; indeks oluşturma hariçtir ve üretimde değişir. Belge başına sözcük frekansı bir kez hesaplanır; sorgu istatistikleri yalnızca yetkili belgelerden alınır. Önceki canlı %73,3 sonucu yukarıda tarihli olarak korunmuştur.
+
+```sh
+node --import tsx scripts/efficiency.ts
+# Önceki sürümün yerel checkout'u varsa:
+node --import tsx scripts/efficiency.ts --baseline ../leandesk-before
+```
+
 ## Telegram ve WhatsApp
 
 Telegram eve'nin yerel kanalıyla, WhatsApp Chat SDK adaptörüyle aynı çekirdeğe bağlanır. İmza/secret denetimleri test edilir. Gerçek platform hesabıyla uçtan uca teslimat henüz doğrulanmadı.
