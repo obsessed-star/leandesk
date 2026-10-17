@@ -1,0 +1,64 @@
+{
+  "measuredAt": "2026-10-17T12:07:25.046Z",
+  "mode": "offline-mocked-provider",
+  "scope": "Same synthetic queries and full source text; measures UTF-8 request content bytes, mock call counts and warm retrieval time. No live tokens, answer-quality or production latency claim.",
+  "retrievalDataset": {
+    "documents": 800,
+    "samples": 7,
+    "constructionExcluded": true
+  },
+  "baseline": {
+    "flow": {
+      "firstRequestContentBytes": 1541,
+      "repeatedVariants": {
+        "routes": [
+          "rag",
+          "rag",
+          "rag"
+        ],
+        "mockModelCalls": 3,
+        "totalContentBytes": 4809
+      },
+      "retrievalTool": {
+        "mockModelCalls": 2,
+        "totalContentBytes": 5860
+      }
+    },
+    "retrieval": {
+      "medianMs": 223.383,
+      "top3": [
+        "mfa-device-2:1",
+        "mfa-device-6:1",
+        "mfa-device-14:1"
+      ]
+    }
+  },
+  "firstRequestByteReductionPercent": 13.4,
+  "warmRetrievalSpeedup": 174.7,
+  "optimized": {
+    "flow": {
+      "firstRequestContentBytes": 1334,
+      "repeatedVariants": {
+        "routes": [
+          "rag",
+          "cache",
+          "cache"
+        ],
+        "mockModelCalls": 1,
+        "totalContentBytes": 1334
+      },
+      "retrievalTool": {
+        "mockModelCalls": 2,
+        "totalContentBytes": 4079
+      }
+    },
+    "retrieval": {
+      "medianMs": 1.279,
+      "top3": [
+        "mfa-device-2:1",
+        "mfa-device-6:1",
+        "mfa-device-14:1"
+      ]
+    }
+  }
+}
