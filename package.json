@@ -1,0 +1,47 @@
+{
+  "name": "leandesk",
+  "version": "0.1.0",
+  "type": "module",
+  "imports": {
+    "#*": "./agent/*",
+    "#evals/*": "./evals/*"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env --import tsx src/server.ts",
+    "dev": "node --env-file-if-exists=.env node_modules/eve/bin/eve.js dev --no-ui",
+    "build": "eve build",
+    "serve": "node --env-file-if-exists=.env node_modules/eve/bin/eve.js start",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "demo": "node --import tsx scripts/demo.ts",
+    "evaluate": "node --import tsx scripts/evaluate.ts",
+    "live": "node --env-file-if-exists=.env --import tsx scripts/live.ts",
+    "format": "prettier --write src agent tests scripts knowledge README.md ARCHITECTURE.md package.json tsconfig.json"
+  },
+  "dependencies": {
+    "@ai-sdk/groq": "4.0.63",
+    "@chat-adapter/state-memory": "4.42.0",
+    "@chat-adapter/whatsapp": "4.42.0",
+    "@vercel/connect": "2.5.2",
+    "ai": "^7.0.137",
+    "chat": "4.42.0",
+    "eve": "^0.80.1",
+    "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "24.x",
+    "just-bash": "3.6.0",
+    "prettier": "3.6.2",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2"
+  },
+  "engines": {
+    "node": "24.x"
+  },
+  "description": "Token-budgeted, source-grounded IT support agent for Groq, Telegram and WhatsApp",
+  "private": true,
+  "overrides": {
+    "undici": "7.30.1",
+    "guarded-fetch": "0.1.6"
+  }
+}
