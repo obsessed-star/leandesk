@@ -1,0 +1,78 @@
+{
+  "measuredAt": "2026-10-17T11:31:21.903Z",
+  "model": "qwen/qwen3.8-27b",
+  "baselineMeasuredAt": "2026-10-17T11:29:54.364Z",
+  "scope": "Two synthetic requests, identical model/output cap; baseline sends all authorized runbooks. Not evidence of production resolution rate.",
+  "baseTokens": 1758,
+  "optimizedTokens": 470,
+  "tokenReductionPercent": 73.3,
+  "cache": {
+    "route": "cache",
+    "usage": {
+      "input": 0,
+      "output": 0,
+      "cachedInput": 0,
+      "calls": 0
+    }
+  },
+  "results": [
+    {
+      "question": "Windows VPN 809 hatası",
+      "baseline": {
+        "usage": {
+          "input": 744,
+          "output": 127,
+          "cachedInput": 0,
+          "calls": 1
+        }
+      },
+      "optimized": {
+        "route": "runbook",
+        "text": "1. Windows Ayarlar > Ağ ve İnternet > VPN bölümünde seçili şirket VPN profilini kontrol et.\n2. İnternet bağlantısını başka bir site açarak doğrula; yalnızca onaylı VPN profilini kullan.\n3. Başka bir güvenilir ağda tekrar dene. Güvenlik duvarını veya uç nokta korumasını kapatma.\n4. 809 devam ederse hata saatini ve bağlantı türünü destek ekibine ilet.\nSonucu bildir; düzelmezse /ticket ile taslak oluşturabiliriz.",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cachedInput": 0,
+          "calls": 0
+        },
+        "citations": [
+          {
+            "id": "vpn-809:1",
+            "title": "Windows VPN bağlantısı",
+            "section": "809 hatası",
+            "revision": "2026-10-17"
+          }
+        ]
+      }
+    },
+    {
+      "question": "Yeni telefon aldım MFA uygulamasına erişemiyorum",
+      "baseline": {
+        "usage": {
+          "input": 750,
+          "output": 137,
+          "cachedInput": 0,
+          "calls": 1
+        }
+      },
+      "optimized": {
+        "route": "rag",
+        "text": "MFA uygulamasına erişim için kurumsal hesabınıza ait onaylı bir kurtarma yöntemi (tek kullanımlık kod veya yedek kod) olup olmadığını kontrol edin. Bu yöntemler mevcut değilse, cihaz değişikliği, uygulama adı ve erişim durumunu içeren bir destek kaydı oluşturmak için IT destek sürecine başvurmanız gerekir. MFA'yı devre dışı bırakmayın veya parola/tek kullanımlık kod paylaşmayın.",
+        "usage": {
+          "input": 339,
+          "output": 131,
+          "cachedInput": 0,
+          "calls": 1
+        },
+        "citations": [
+          {
+            "id": "mfa-device:1",
+            "title": "Yeni telefon ve MFA erişimi",
+            "section": "Cihaz değişikliği",
+            "revision": "2026-10-17"
+          }
+        ]
+      }
+    }
+  ]
+}
