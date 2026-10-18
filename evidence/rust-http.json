@@ -1,0 +1,28 @@
+{
+  "answer": {
+    "route": "handoff",
+    "text": "İlgili kaynakları buldum; Groq bağlantısı yapılandırılmadığı için model yanıtı üretemiyorum. Kaynakları inceleyebilir veya /ticket ile kayıt hazırlayabilirsin.",
+    "usage": {
+      "input": 0,
+      "output": 0,
+      "cachedInput": 0,
+      "calls": 0
+    },
+    "citations": [
+      {
+        "id": "mfa-device:1",
+        "title": "Yeni telefon ve MFA erişimi",
+        "section": "Cihaz değişikliği",
+        "revision": "2026-10-17"
+      }
+    ]
+  },
+  "health": {
+    "status": "ok",
+    "service": "leandesk",
+    "searchBackend": "rust",
+    "groqConfigured": false
+  },
+  "measuredAt": "2026-10-18T10:57:23.8960754Z",
+  "mode": "compiled eve, real Rust WASM, no Groq credential"
+}

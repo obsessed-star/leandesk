@@ -1,0 +1,189 @@
+{
+  "measuredAt": "2026-10-18T10:54:58.646Z",
+  "mode": "actual-rust-wasm-vs-typescript",
+  "node": "v24.19.0",
+  "platform": "win32-x64",
+  "scope": "Synthetic IT corpus, five queries, 15 warm-up queries, median of 15 five-query batches. Includes bridge and authorization. Construction reported separately. No Groq request, token or end-to-end response-time claim.",
+  "results": [
+    {
+      "documents": 800,
+      "typescript": {
+        "backend": "typescript",
+        "constructionMs": 24.933,
+        "warmMedianMsPerQuery": 0.1354,
+        "results": [
+          [
+            "doc-2:1",
+            "doc-6:1",
+            "doc-14:1"
+          ],
+          [
+            "doc-1:1",
+            "doc-9:1",
+            "doc-13:1"
+          ],
+          [
+            "doc-4:1",
+            "doc-8:1",
+            "doc-12:1"
+          ],
+          [
+            "doc-3:1",
+            "doc-7:1",
+            "doc-11:1"
+          ],
+          []
+        ]
+      },
+      "rust": {
+        "backend": "rust",
+        "constructionMs": 35.033,
+        "warmMedianMsPerQuery": 0.0309,
+        "results": [
+          [
+            "doc-2:1",
+            "doc-6:1",
+            "doc-14:1"
+          ],
+          [
+            "doc-1:1",
+            "doc-9:1",
+            "doc-13:1"
+          ],
+          [
+            "doc-4:1",
+            "doc-8:1",
+            "doc-12:1"
+          ],
+          [
+            "doc-3:1",
+            "doc-7:1",
+            "doc-11:1"
+          ],
+          []
+        ]
+      },
+      "speedup": 4.38
+    },
+    {
+      "documents": 8000,
+      "typescript": {
+        "backend": "typescript",
+        "constructionMs": 215.169,
+        "warmMedianMsPerQuery": 6.192,
+        "results": [
+          [
+            "doc-2:1",
+            "doc-6:1",
+            "doc-14:1"
+          ],
+          [
+            "doc-1:1",
+            "doc-9:1",
+            "doc-13:1"
+          ],
+          [
+            "doc-4:1",
+            "doc-8:1",
+            "doc-12:1"
+          ],
+          [
+            "doc-3:1",
+            "doc-7:1",
+            "doc-11:1"
+          ],
+          []
+        ]
+      },
+      "rust": {
+        "backend": "rust",
+        "constructionMs": 274.103,
+        "warmMedianMsPerQuery": 0.3923,
+        "results": [
+          [
+            "doc-2:1",
+            "doc-6:1",
+            "doc-14:1"
+          ],
+          [
+            "doc-1:1",
+            "doc-9:1",
+            "doc-13:1"
+          ],
+          [
+            "doc-4:1",
+            "doc-8:1",
+            "doc-12:1"
+          ],
+          [
+            "doc-3:1",
+            "doc-7:1",
+            "doc-11:1"
+          ],
+          []
+        ]
+      },
+      "speedup": 15.78
+    },
+    {
+      "documents": 20000,
+      "typescript": {
+        "backend": "typescript",
+        "constructionMs": 583.043,
+        "warmMedianMsPerQuery": 17.2058,
+        "results": [
+          [
+            "doc-2:1",
+            "doc-6:1",
+            "doc-14:1"
+          ],
+          [
+            "doc-1:1",
+            "doc-9:1",
+            "doc-13:1"
+          ],
+          [
+            "doc-4:1",
+            "doc-8:1",
+            "doc-12:1"
+          ],
+          [
+            "doc-3:1",
+            "doc-7:1",
+            "doc-11:1"
+          ],
+          []
+        ]
+      },
+      "rust": {
+        "backend": "rust",
+        "constructionMs": 742.791,
+        "warmMedianMsPerQuery": 0.6878,
+        "results": [
+          [
+            "doc-2:1",
+            "doc-6:1",
+            "doc-14:1"
+          ],
+          [
+            "doc-1:1",
+            "doc-9:1",
+            "doc-13:1"
+          ],
+          [
+            "doc-4:1",
+            "doc-8:1",
+            "doc-12:1"
+          ],
+          [
+            "doc-3:1",
+            "doc-7:1",
+            "doc-11:1"
+          ],
+          []
+        ]
+      },
+      "speedup": 25.02
+    }
+  ]
+}
