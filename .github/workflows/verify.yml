@@ -19,6 +19,11 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      - run: rustup target add wasm32-unknown-unknown
+      - run: npm run build:rust
+      - run: npm test
+        env:
+          SUPPORT_SEARCH_BACKEND: rust
       - run: npm run evaluate
       - run: npm run build
       - run: npm audit --audit-level=high
