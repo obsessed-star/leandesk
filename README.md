@@ -78,6 +78,33 @@ node --import tsx scripts/efficiency.ts
 node --import tsx scripts/efficiency.ts --baseline ../leandesk-before
 ```
 
+## Rust ile arama hızlandırma
+
+BM25 araması için bağımlılıksız Rust + WebAssembly motoru eklendi. Ters indeks yalnızca sorgu terimlerinin geçtiği kayıtları puanlar ve ilk üç sonucu seçer; her sorguda yeni süreç başlatılmaz. Türkçe normalizasyonu ortak TypeScript katmanında kalır. Tenant/scope filtresi Rust içinde de uygulanır; IDF yalnızca yetkili belgelerden hesaplanır.
+
+`SUPPORT_SEARCH_BACKEND=auto` varsayılanında 64 ve üzeri bölüm Rust kullanır; küçük tabanlar TypeScript kullanır. `rust` Rust'ı zorunlu tutar ve eksik/bozuk/eski derlemede hata verir. `typescript` karşılaştırma veya geri dönüş içindir. `auto` Rust yüklenemezse TypeScript'e döner. Aktif motor `/healthz` yanıtındaki `searchBackend` alanında görünür.
+
+Depodaki `native/search.wasm` hazır derlemedir; normal kullanım için Rust kurulumu gerekmez. Derlemeyi değiştirmek için [Rust'ın WASM hedefini](https://doc.rust-lang.org/rustc/platform-support/wasm32-unknown-unknown.html) kurun:
+
+```sh
+rustup target add wasm32-unknown-unknown
+npm run build:rust
+npm test
+npm run bench:rust
+```
+
+Kaynak ve WASM SHA-256 değerleri `native/manifest.json` ile doğrulanır. Modül host import'u içermez; dosya, ağ veya shell yetkisi verilmez. CI hem yayımlanan derlemeyi hem kaynaklardan yeniden derlenen Rust yolunu test eder.
+
+[18 Ekim 2026 ölçümü](evidence/rust-search.json), gerçek Rust WASM ile önceki TypeScript motorunu aynı sentetik belgeler ve sorgularla karşılaştırır:
+
+| Belge  | TypeScript sıcak arama | Rust sıcak arama | Hızlanma |
+| ------ | ---------------------: | ---------------: | -------: |
+| 800    |              0,1354 ms |        0,0309 ms |    4,38× |
+| 8.000  |              6,1920 ms |        0,3923 ms |   15,78× |
+| 20.000 |             17,2058 ms |        0,6878 ms |   25,02× |
+
+Değerler beş sorguluk 15 sıcak çalıştırmanın medyanıdır; JS/WASM geçişi, yetki denetimi ve sonuç eşlemesi dahildir. Aynı sonuç sıralaması doğrulandı. Bu makinedeki sentetik arama ölçümüdür; token veya uçtan uca ajan yanıt süresi ölçümü değildir. Kazanç yalnızca dilden değil, ters indeks ve sınırlı sonuç seçimi algoritmasından da gelir. İlk indeks kurma maliyeti artar: 20.000 belgede TypeScript 583 ms, Rust 743 ms; sık sorguda amorti edilir.
+
 ## Telegram ve WhatsApp
 
 Telegram eve'nin yerel kanalıyla, WhatsApp Chat SDK adaptörüyle aynı çekirdeğe bağlanır. İmza/secret denetimleri test edilir. Gerçek platform hesabıyla uçtan uca teslimat henüz doğrulanmadı.

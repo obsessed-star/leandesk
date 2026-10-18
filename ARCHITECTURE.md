@@ -29,6 +29,16 @@ The initial prompt includes each question/attempt once. A second retrieval sends
 
 Document term frequencies are indexed once per `Knowledge` instance. Per-query document frequency and average length use only authorized documents. BM25 scores and ranking are preserved, with query work linear in authorized documents times query terms rather than rescanning the corpus inside every document score. Another tenant's documents cannot influence those statistics. `scripts/efficiency.ts` records offline request bytes, mock call counts and warm retrieval timing; it makes no new live-token or production-quality claim.
 
+## Rust search backend
+
+The Rust crate in `rust-search/` compiles to a dependency-free, import-free WASM module. Each knowledge snapshot owns one persistent instance and an inverted index of numeric term IDs, document lengths and tenant/scope group IDs. Normalization is shared with TypeScript, so Unicode/Turkish tokenization does not diverge. Rust computes authorized-corpus IDF, scores matching postings only and retains a stable top-three ranking. This changes the algorithm as well as the implementation language.
+
+`auto` selects Rust at 64 sections or more when a valid artifact is available; otherwise TypeScript remains available. Explicit `rust` fails on an absent, stale or corrupt artifact. `typescript` forces the reference implementation. Loading checks source and binary hashes and rejects all host imports. The artifact is read from `native/` relative to the service working directory; ship `native/` and `rust-search/` with the repository deployment, alongside `knowledge/`. Node runs WASM directly, without per-query IPC or a native platform addon.
+
+Input is a bounded u32 buffer with checked index parsing and no unsafe Rust. Every query supplies the authorized group IDs from server-owned principal bindings. Ranking statistics never mix tenants. Up to 256 MiB WASM linear memory and eight million input words are permitted; this pilot is not an unbounded search service. JS term-frequency maps are released after a Rust index loads, while query vocabulary/group maps remain available. Construction still tokenizes the source once and adds WASM indexing work. Benchmarks report construction separately from warm queries and include the host bridge.
+
+`tests/rust-search.test.ts` compares actual WASM with TypeScript across Turkish queries, permissions, limits, stable ties, independent snapshots and malformed inputs. CI also forces all support-agent tests through the rebuilt Rust backend. `evidence/rust-search.json` is a synthetic local search benchmark, not evidence of faster Groq inference or lower billed tokens.
+
 ## Persistence and delivery
 
 SQLite WAL stores redacted case facts, cached answers, events, delivery marks, tickets and per-owner metrics. Cases expire logically after 24 hours, drafts after 30 minutes and answer cache after 15 minutes. Expiration does not physically erase historical rows; automatic retention purge is not implemented.

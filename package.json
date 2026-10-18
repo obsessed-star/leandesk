@@ -10,6 +10,8 @@
     "start": "node --env-file-if-exists=.env --import tsx src/server.ts",
     "dev": "node --env-file-if-exists=.env node_modules/eve/bin/eve.js dev --no-ui",
     "build": "eve build",
+    "build:rust": "node --import tsx scripts/build-rust.ts",
+    "bench:rust": "node --import tsx scripts/bench-rust.ts",
     "serve": "node --env-file-if-exists=.env node_modules/eve/bin/eve.js start",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test tests/*.test.ts",
