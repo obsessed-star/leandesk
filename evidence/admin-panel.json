@@ -1,0 +1,54 @@
+{
+  "measuredAt": "2026-10-18T11:16:42.624Z",
+  "mode": "compiled eve server, actual SQLite, no Groq request",
+  "checks": [
+    {
+      "name": "compiled admin shell and CSP",
+      "status": 200
+    },
+    {
+      "name": "/assets/app",
+      "status": 200
+    },
+    {
+      "name": "/assets/styles",
+      "status": 200
+    },
+    {
+      "name": "anonymous overview denied",
+      "status": 401
+    },
+    {
+      "name": "authenticated tenant overview",
+      "status": 200
+    },
+    {
+      "name": "source search without model call",
+      "status": 200,
+      "source": "mfa-device:1"
+    },
+    {
+      "name": "logout",
+      "status": 200
+    },
+    {
+      "name": "revoked session denied",
+      "status": 401
+    }
+  ],
+  "summary": {
+    "requests": 3,
+    "modelCalls": 0,
+    "paused": false
+  },
+  "browserChecks": [
+    "login/logout",
+    "pause/resume with confirmation",
+    "cache clear with confirmation",
+    "resolve user-approved verification ticket",
+    "source search",
+    "audit history"
+  ],
+  "automatedAdminTests": 9,
+  "scope": "Local synthetic verification record. Credentials, cookies and CSRF tokens omitted. No real Telegram/WhatsApp delivery or mobile viewport claim."
+}
