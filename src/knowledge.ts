@@ -6,6 +6,11 @@ import {
   type Principal,
   type Runbook,
 } from "./contracts.ts";
+import {
+  RustSearch,
+  type SearchBackend,
+  type TermIndex,
+} from "./rust-search.ts";
 
 const words = (s: string): string[] =>
   normalize(s).match(/[\p{L}\p{N}]{2,}/gu) ?? [];
@@ -26,11 +31,16 @@ const stop = new Set([
 export class Knowledge {
   readonly chunks: Chunk[];
   readonly revision: string;
-  private readonly tokens: Map<
-    Chunk,
-    { length: number; frequency: Map<string, number> }
-  >;
-  constructor(readonly books: Runbook[]) {
+  readonly backend: "rust" | "typescript";
+  private readonly rust?: RustSearch;
+  private readonly tokens: Map<Chunk, TermIndex>;
+  constructor(
+    readonly books: Runbook[],
+    backend: SearchBackend = (process.env.SUPPORT_SEARCH_BACKEND ??
+      "auto") as SearchBackend,
+  ) {
+    if (!["auto", "typescript", "rust"].includes(backend))
+      throw Error("Invalid SUPPORT_SEARCH_BACKEND.");
     // A content digest invalidates cached answers whenever any runbook changes.
     this.revision = createHash("sha256")
       .update(JSON.stringify(books))
@@ -57,6 +67,18 @@ export class Knowledge {
         return [chunk, { length: terms.length, frequency }];
       }),
     );
+    if (
+      backend === "rust" ||
+      (backend === "auto" && this.chunks.length >= 64)
+    ) {
+      try {
+        this.rust = new RustSearch(this.chunks, this.tokens);
+      } catch (error) {
+        if (backend === "rust") throw error;
+      }
+    }
+    this.backend = this.rust ? "rust" : "typescript";
+    if (this.rust) this.tokens.clear(); // Do not retain duplicate JS term-frequency tables.
   }
   static load(path = "knowledge/runbooks.json") {
     return new Knowledge(JSON.parse(readFileSync(path, "utf8")) as Runbook[]);
@@ -78,8 +100,14 @@ export class Knowledge {
     );
   }
   search(p: Principal, query: string, limit = 3): Chunk[] {
-    const corpus = this.allowed(p),
-      terms = [...new Set(words(query).filter((w) => !stop.has(w)))];
+    const terms = [...new Set(words(query).filter((w) => !stop.has(w)))];
+    limit = Number.isFinite(limit)
+      ? Math.max(0, Math.min(3, Math.trunc(limit)))
+      : 0;
+    if (!terms.length || !limit) return [];
+    if (this.rust)
+      return this.rust.search(p, terms, limit).map((id) => this.chunks[id]);
+    const corpus = this.allowed(p);
     if (!terms.length || !corpus.length) return [];
     const tokenized = corpus.map((c) => this.tokens.get(c)!);
     const avg = tokenized.reduce((n, t) => n + t.length, 0) / corpus.length;

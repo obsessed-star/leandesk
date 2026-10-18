@@ -47,6 +47,7 @@ export class Runtime {
       return Response.json({
         status: "ok",
         service: "leandesk",
+        searchBackend: this.agent.knowledge.backend,
         groqConfigured: !!process.env.GROQ_API_KEY,
       });
     const p = this.identify(
