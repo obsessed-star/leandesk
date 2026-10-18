@@ -220,6 +220,15 @@ export class SupportAgent {
           "Onaylı belgelerde bu sorun için yeterli bilgi bulamadım. Uygulama adını ve hata kodunu yazar mısın? /ticket ile destek kaydı da hazırlayabiliriz.",
         ),
       );
+    if (this.store.paused(r.principal.tenant))
+      return finish(
+        answer(
+          "handoff",
+          "Model çağrıları yönetici tarafından durduruldu. /ticket ile destek kaydı hazırlayabilirsin.",
+          zeroUsage(),
+          chunks,
+        ),
+      );
     if (!this.provider)
       return finish(
         answer(
@@ -264,6 +273,15 @@ export class SupportAgent {
     ];
     let usage = zeroUsage();
     for (let step = 0; step < this.budget.maxCalls; step++) {
+      if (this.store.paused(r.principal.tenant))
+        return finish(
+          answer(
+            "handoff",
+            "Model çağrıları yönetici tarafından durduruldu. /ticket ile devam edebilirsin.",
+            usage,
+            chunks,
+          ),
+        );
       if (this.store.recentCalls(owner) + usage.calls >= 40)
         return finish(
           answer(
@@ -355,7 +373,7 @@ export class SupportAgent {
         )
           break;
         const result = answer("rag", redact(parsed.data.answer), usage, cited);
-        this.store.cache(cacheKey, { ...result, usage: zeroUsage() });
+        this.store.cache(cacheKey, { ...result, usage: zeroUsage() }, owner);
         return finish(result);
       } catch (error) {
         if (error instanceof ProviderError && error.usage)

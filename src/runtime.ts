@@ -5,6 +5,11 @@ import { GroqProvider } from "./provider.ts";
 import { Knowledge } from "./knowledge.ts";
 import { Store } from "./store.ts";
 import type { Channel, Principal } from "./contracts.ts";
+import {
+  AdminConsole,
+  adminIdentitySchema,
+  type AdminIdentity,
+} from "./admin.ts";
 
 const principal = z
   .object({
@@ -25,10 +30,14 @@ export function equalSecret(a: string, b: string): boolean {
   return x.length === y.length && timingSafeEqual(x, y);
 }
 export class Runtime {
+  readonly admin: AdminConsole;
   constructor(
     readonly agent: SupportAgent,
     readonly bindings: z.infer<typeof identities>,
-  ) {}
+    admins: AdminIdentity[] = [],
+  ) {
+    this.admin = new AdminConsole(this, admins);
+  }
   identify(channel: Channel, subject: string): Principal | undefined {
     const found = this.bindings.find(
       (p) =>
@@ -43,6 +52,8 @@ export class Runtime {
   }
   async http(request: Request): Promise<Response> {
     const url = new URL(request.url);
+    if (url.pathname === "/admin" || url.pathname.startsWith("/admin/"))
+      return this.admin.http(request);
     if (request.method === "GET" && url.pathname === "/healthz")
       return Response.json({
         status: "ok",
@@ -99,6 +110,9 @@ export function getRuntime(): Runtime {
           : undefined,
       ),
       bindings,
+      adminIdentitySchema.parse(
+        JSON.parse(process.env.SUPPORT_ADMIN_IDENTITIES_JSON ?? "[]"),
+      ),
     );
   }
   return singleton;

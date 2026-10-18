@@ -20,13 +20,16 @@ const server = createServer(async (req, res) => {
     for (const [k, v] of Object.entries(req.headers))
       if (v) headers.set(k, Array.isArray(v) ? v.join(",") : v);
     const response = await runtime.http(
-      new Request(`http://localhost${req.url}`, {
-        method: req.method,
-        headers,
-        ...(req.method !== "GET" && req.method !== "HEAD"
-          ? { body: Buffer.concat(chunks) }
-          : {}),
-      }),
+      new Request(
+        new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`),
+        {
+          method: req.method,
+          headers,
+          ...(req.method !== "GET" && req.method !== "HEAD"
+            ? { body: Buffer.concat(chunks) }
+            : {}),
+        },
+      ),
     );
     res.writeHead(response.status, Object.fromEntries(response.headers));
     res.end(await response.text());
