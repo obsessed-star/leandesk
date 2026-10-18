@@ -53,6 +53,16 @@ Actual provider input/output tokens and cached input are recorded. Local answer-
 
 Byte caps, output reservation, case usage and rolling daily call counts are checked before requests. Bytes are a conservative proxy, not an exact tokenizer. No automatic retry, critic model, embedding service or LLM summarizer is used.
 
+## Administration
+
+`AdminConsole` serves the buildless `admin/` assets and `/admin/api/*` routes through the same Node/eve runtime. Separate server-configured admin credentials bind each administrator to one tenant. In-memory opaque sessions last eight hours, are capped at 256, use HttpOnly/SameSite cookies and a per-session CSRF secret. Mutations require an exact Origin match. TLS deployments must configure the external origin and Secure cookie option. Support bearer tokens do not grant administrator access.
+
+Tenant access is computed from current server identity bindings; hashed owner keys are never supplied by the client. SQLite aggregates usage over those owners and the selected time window. Knowledge search uses the administrator's fixed tenant, ignoring any client request to override it. No model is called by the dashboard. Unknown provider usage stays visible separately from recorded token totals.
+
+`admin_settings` stores per-tenant model pauses. The bounded controller checks this before provider calls, including the second tool completion; already-running requests are not cancelled. Cache rows now include an owner key through an additive migration. Ownerless legacy cache rows are left untouched by admin clearing. Draft approval remains exclusively the support user's command; admin ticket changes apply only between queued/resolved states. Every mutation and its audit record commit in one SQLite transaction. Audit history and pause state persist across restarts; admin sessions do not.
+
+Assets use a restrictive same-origin CSP and no third-party assets. User/document content is rendered with DOM text nodes. The panel supplies bounded pilot views (50 newest tickets, 30 audit entries), not unbounded exports. Company SSO, administrator lifecycle management, distributed rate limits and retention controls remain production integration work.
+
 ## Verification and deployment
 
 Offline tests cover control flow and adapter verification. Retrieval evaluation uses four synthetic queries. `evidence/live-groq.json` records real provider usage for two synthetic tasks and a local cache hit. Baseline usage was measured earlier in the same session and reused to avoid extra spend. This is not a production benchmark or a full live channel/tool-calling evaluation.

@@ -105,6 +105,32 @@ Kaynak ve WASM SHA-256 değerleri `native/manifest.json` ile doğrulanır. Modü
 
 Değerler beş sorguluk 15 sıcak çalıştırmanın medyanıdır; JS/WASM geçişi, yetki denetimi ve sonuç eşlemesi dahildir. Aynı sonuç sıralaması doğrulandı. Bu makinedeki sentetik arama ölçümüdür; token veya uçtan uca ajan yanıt süresi ölçümü değildir. Kazanç yalnızca dilden değil, ters indeks ve sınırlı sonuç seçimi algoritmasından da gelir. İlk indeks kurma maliyeti artar: 20.000 belgede TypeScript 583 ms, Rust 743 ms; sık sorguda amorti edilir.
 
+## Yönetici paneli
+
+![LeanDesk Control — gerçek yerel doğrulama ekranı](admin/preview.png)
+
+`npm start` veya derlenmiş eve sunucusunda **`/admin`** adresini açın. Panel aynı SQLite verilerini kullanır; token kullanımı, çözüm yolları, yedi günlük talep grafiği, arama motoru, kanal yapılandırması ve destek kuyruğunu gösterir. Panel veya kaynak arama testi Groq çağırmaz.
+
+Yönetici anahtarını destek API token'ından ayrı üretin. `.env` dosyasında örnek yapılandırma:
+
+```dotenv
+SUPPORT_ADMIN_IDENTITIES_JSON=[{"id":"ops","tenant":"demo","token":"REPLACE_WITH_A_SEPARATE_RANDOM_64_HEX_TOKEN"}]
+```
+
+Anahtar en az 32 karakter olmalıdır; örnekteki değeri kullanmayın. Rastgele anahtarı yerelde `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"` ile oluşturabilirsiniz. Anahtarı paneldeki giriş alanına girin. Tarayıcıda HttpOnly, SameSite=Strict oturum çerezi tutulur; anahtar localStorage'a yazılmaz. Oturum sekiz saat sonra veya sunucu yeniden başlatılınca biter. Birden fazla şirket için ayrı yönetici tanımları kullanın.
+
+HTTPS reverse proxy arkasında `SUPPORT_ADMIN_ORIGIN=https://YOUR_HOST` ve `SUPPORT_ADMIN_SECURE_COOKIE=true` ayarlayın. Panel ile API aynı origin'de sunulur; yazma işlemleri Origin ve CSRF denetiminden geçer. Başarısız girişler süreç genelinde 10 deneme/dakika ile sınırlandırılır. Bu pilot, kurumsal SSO/MFA yerine geçmez.
+
+Panel kontrolleri:
+
+- **Model duraklat / sürdür:** yalnızca yöneticinin şirketinde yeni Groq çağrılarını engeller. Başlamış bir çağrı tamamlanabilir; hazır çözümler, önbellek ve kayıt taslakları çalışır.
+- **Önbelleği temizle:** yalnızca şirketin güncel kimlik eşlemelerine ait yanıt önbelleğini temizler. Sonraki talepler tekrar model harcayabilir.
+- **Kayıt çöz / tekrar aç:** kullanıcının önceden onayladığı yerel kayıtların durumunu değiştirir. Yönetici, kullanıcı taslağını onun adına onaylayamaz.
+- **Kaynak kontrolü:** şirketin belgelerini listeler ve model çağırmadan ilk üç arama sonucunu gösterir.
+- **İşlem geçmişi:** giriş, çıkış ve değişiklikleri şirket kapsamında kaydeder.
+
+Metrikler son 24 saati; grafik günleri UTC'ye göre son yedi günü kapsar. Talep sayısına kayıt komutları da dahildir. Eksik sağlayıcı token raporları ayrıca işaretlenir; tahmini para maliyeti gösterilmez. Panel en güncel 50 kaydı ve 30 yönetici işlemini listeler. Eski veya artık eşlenmeyen kullanıcıların verileri yönetici görünümüne otomatik katılmaz. Önceki sürümden gelen sahip bilgisi olmayan önbellek satırları toplu temizlenmez; kendi TTL'leri uygulanır.
+
 ## Telegram ve WhatsApp
 
 Telegram eve'nin yerel kanalıyla, WhatsApp Chat SDK adaptörüyle aynı çekirdeğe bağlanır. İmza/secret denetimleri test edilir. Gerçek platform hesabıyla uçtan uca teslimat henüz doğrulanmadı.
