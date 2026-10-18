@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>LeanDesk · Kontrol merkezi</title>
+    <link rel="stylesheet" href="/admin/assets/styles" />
+    <script src="/admin/assets/app" defer></script>
+  </head>
+  <body>
+    <main id="login" class="login-layout">
+      <section class="login-brand">
+        <a class="brand" href="/admin"
+          ><span class="brand-mark">L</span>LeanDesk<span class="brand-tag"
+            >CONTROL</span
+          ></a
+        >
+        <div class="login-copy">
+          <p class="eyebrow">DAHA AZ TOKEN. DAHA NET KONTROL.</p>
+          <h1>Destek operasyonu,<br />tek bir yerde.</h1>
+          <p>
+            Kullanımı takip edin, bilgi kaynaklarını doğrulayın ve ekibinizin
+            destek kuyruğunu yönetin.
+          </p>
+          <div class="login-note">
+            <span class="status-dot"></span>Şirket kapsamlı erişim · Ayrı
+            yönetici oturumu
+          </div>
+        </div>
+        <p class="login-footer">LeanDesk / Operasyon konsolu</p>
+      </section>
+      <section class="login-form-wrap">
+        <form id="login-form" class="login-card">
+          <span class="small-label">YÖNETİCİ GİRİŞİ</span>
+          <h2>Kontrol sizde.</h2>
+          <p>Bu çalışma alanına atanmış yönetici anahtarınızla devam edin.</p>
+          <label for="admin-key">Yönetici anahtarı</label
+          ><input
+            id="admin-key"
+            name="token"
+            type="password"
+            autocomplete="current-password"
+            required
+            maxlength="512"
+            placeholder="Yönetici anahtarınızı girin"
+          /><button class="button primary" type="submit">
+            Güvenli giriş <span aria-hidden="true">↗</span>
+          </button>
+          <p id="login-error" role="alert" class="form-error"></p>
+          <p class="muted login-help">
+            Destek API anahtarı burada kullanılamaz. Yönetici erişimi sunucu
+            yapılandırmasından atanır.
+          </p>
+        </form>
+      </section>
+    </main>
+
+    <div id="workspace" class="workspace" hidden>
+      <aside class="sidebar">
+        <a class="brand" href="/admin"
+          ><span class="brand-mark">L</span>LeanDesk</a
+        ><span class="sidebar-label">ÇALIŞMA ALANI</span>
+        <div class="workspace-name">
+          <span class="workspace-icon">▦</span><span id="tenant-name">—</span
+          ><span class="tiny-badge">OPS</span>
+        </div>
+        <nav aria-label="Yönetim bölümleri">
+          <button
+            data-view="overview"
+            class="nav-item active"
+            aria-current="page"
+          >
+            <span aria-hidden="true">◫</span>Genel bakış</button
+          ><button data-view="tickets" class="nav-item">
+            <span aria-hidden="true">▤</span>Destek kayıtları<span
+              id="nav-queued"
+              class="nav-count"
+              >0</span
+            ></button
+          ><button data-view="knowledge" class="nav-item">
+            <span aria-hidden="true">▥</span>Bilgi tabanı</button
+          ><button data-view="audit" class="nav-item">
+            <span aria-hidden="true">◷</span>İşlem geçmişi
+          </button>
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="server-note">
+            <span class="status-dot"></span>Yerel veriler · Canlı kontroller
+          </div>
+          <div class="admin-user">
+            <span class="avatar">A</span>
+            <div>
+              <strong id="admin-name">Yönetici</strong
+              ><span>Çalışma alanı yöneticisi</span>
+            </div>
+            <button
+              id="logout"
+              class="icon-button"
+              aria-label="Oturumu kapat"
+              title="Oturumu kapat"
+            >
+              ↪
+            </button>
+          </div>
+        </div>
+      </aside>
+      <div class="main-area">
+        <header class="topbar">
+          <div>
+            <span class="muted">Çalışma alanı</span><span class="slash">/</span
+            ><strong id="breadcrumb">Genel bakış</strong>
+          </div>
+          <div class="topbar-right">
+            <span class="badge neutral">ADMIN</span
+            ><span class="avatar small">A</span>
+          </div>
+        </header>
+        <main class="content">
+          <div class="page-heading">
+            <div>
+              <p class="eyebrow">LEANDESK CONTROL</p>
+              <h1 id="page-title">Operasyon merkezi</h1>
+              <p id="page-subtitle">
+                Harcamayı izleyin. Gerektiğinde müdahale edin.
+              </p>
+            </div>
+            <div class="refresh-area">
+              <span id="updated" class="muted">Veriler yükleniyor</span
+              ><button id="refresh" class="button secondary">
+                <span aria-hidden="true">↻</span> Yenile
+              </button>
+            </div>
+          </div>
+
+          <section id="view-overview" class="view" aria-label="Genel bakış">
+            <div id="paused-banner" class="notice amber" hidden>
+              Model çağrıları duraklatıldı. Hazır çözümler, önbellek ve destek
+              kayıtları çalışmaya devam eder.
+            </div>
+            <div class="metric-grid">
+              <article class="metric-card">
+                <p>Destek talebi <span>24 SAAT</span></p>
+                <strong id="metric-requests">0</strong>
+                <div id="metric-users">0 kullanıcı eşlemesi</div>
+              </article>
+              <article class="metric-card">
+                <p>Model çağrısı <span>24 SAAT</span></p>
+                <strong id="metric-calls">0</strong>
+                <div id="metric-local">0 talep model çağırmadan işlendi</div>
+              </article>
+              <article class="metric-card">
+                <p>Token kullanımı <span>24 SAAT</span></p>
+                <strong id="metric-tokens">0</strong>
+                <div id="metric-usage">0 giriş · 0 çıkış</div>
+              </article>
+              <article class="metric-card accent">
+                <p>Destek kuyruğu <span>AÇIK</span></p>
+                <strong id="metric-queued">0</strong>
+                <div id="metric-drafts">0 onay bekleyen taslak</div>
+              </article>
+            </div>
+            <div class="overview-grid">
+              <article class="panel activity-panel">
+                <div class="panel-heading">
+                  <div>
+                    <h2>Talep akışı</h2>
+                    <p>Son 7 gün · Gün sınırları UTC</p>
+                  </div>
+                  <span class="badge neutral">MODEL + YEREL</span>
+                </div>
+                <div class="chart-legend">
+                  <span><i></i>Destek talebi</span
+                  ><span id="week-total">0 talep</span>
+                </div>
+                <svg
+                  id="activity-chart"
+                  viewBox="0 0 700 180"
+                  role="img"
+                  aria-label="Son yedi günün destek talepleri"
+                ></svg>
+                <div id="chart-labels" class="chart-labels"></div>
+                <p id="chart-empty" class="chart-note">
+                  Henüz talep yok. Gelen talepler burada görünecek.
+                </p>
+              </article>
+              <article class="panel engine-panel">
+                <div class="panel-heading">
+                  <div>
+                    <h2>Çalışma durumu</h2>
+                    <p>Etkin servis yapılandırması</p>
+                  </div>
+                  <span id="engine-badge" class="badge success">Hazır</span>
+                </div>
+                <dl class="status-list">
+                  <div>
+                    <dt>Arama motoru</dt>
+                    <dd id="backend">—</dd>
+                  </div>
+                  <div>
+                    <dt>Groq</dt>
+                    <dd id="groq-status">—</dd>
+                  </div>
+                  <div>
+                    <dt>Telegram</dt>
+                    <dd id="telegram-status">—</dd>
+                  </div>
+                  <div>
+                    <dt>WhatsApp</dt>
+                    <dd id="whatsapp-status">—</dd>
+                  </div>
+                  <div>
+                    <dt>Aktif yanıt önbelleği</dt>
+                    <dd id="cache-count">0 kayıt</dd>
+                  </div>
+                </dl>
+                <p class="panel-footnote">
+                  Kanal yapılandırması, canlı mesaj teslimatının doğrulandığı
+                  anlamına gelmez.
+                </p>
+              </article>
+            </div>
+            <div class="overview-grid bottom-grid">
+              <article class="panel">
+                <div class="panel-heading">
+                  <div>
+                    <h2>Yanıt dağılımı</h2>
+                    <p>Son 24 saatte seçilen çözüm yolları</p>
+                  </div>
+                </div>
+                <div id="route-list" class="route-list"></div>
+              </article>
+              <article class="panel controls-panel">
+                <div class="panel-heading">
+                  <div>
+                    <h2>Operasyon kontrolleri</h2>
+                    <p>Yalnızca bu çalışma alanına uygulanır</p>
+                  </div>
+                </div>
+                <div class="control-row">
+                  <div>
+                    <strong>Model trafiği</strong>
+                    <p>Yeni Groq çağrılarını durdurun veya sürdürün.</p>
+                  </div>
+                  <button id="pause-toggle" class="button secondary">
+                    Duraklat
+                  </button>
+                </div>
+                <div class="control-row">
+                  <div>
+                    <strong>Yanıt önbelleği</strong>
+                    <p>Güncel içerikle yeniden yanıt üretilmesini sağlayın.</p>
+                  </div>
+                  <button id="clear-cache" class="button secondary">
+                    Temizle
+                  </button>
+                </div>
+                <div id="limits" class="limits"></div>
+                <p id="unknown-usage" class="notice amber" hidden></p>
+              </article>
+            </div>
+          </section>
+
+          <section
+            id="view-tickets"
+            class="view"
+            hidden
+            aria-label="Destek kayıtları"
+          >
+            <article class="panel">
+              <div class="panel-heading">
+                <div>
+                  <h2>Kayıt kuyruğu</h2>
+                  <p>En güncel 50 kayıt · Yerel SQLite kuyruğu</p>
+                </div>
+                <label class="filter-label"
+                  >Durum<select id="ticket-filter">
+                    <option value="all">Tümü</option>
+                    <option value="queued">Kuyrukta</option>
+                    <option value="draft">Taslak</option>
+                    <option value="resolved">Çözüldü</option>
+                  </select></label
+                >
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Kayıt / Sorun</th>
+                      <th>Kullanıcı</th>
+                      <th>Oluşturulma</th>
+                      <th>Durum</th>
+                      <th class="align-right">İşlem</th>
+                    </tr>
+                  </thead>
+                  <tbody id="ticket-rows"></tbody>
+                </table>
+              </div>
+              <div id="ticket-empty" class="empty-state" hidden>
+                <span>▤</span>
+                <h3>Bu görünümde kayıt yok.</h3>
+                <p>
+                  Kullanıcıların onayladığı destek kayıtları burada listelenir.
+                </p>
+              </div>
+            </article>
+            <p class="section-note">
+              Taslaklar kullanıcı onayı olmadan kuyruğa alınamaz. “Çözüldü”
+              işlemi yerel durumu günceller; Jira veya e-posta göndermez.
+            </p>
+          </section>
+
+          <section
+            id="view-knowledge"
+            class="view"
+            hidden
+            aria-label="Bilgi tabanı"
+          >
+            <div class="knowledge-grid">
+              <article class="panel">
+                <div class="panel-heading">
+                  <div>
+                    <h2>Onaylı kaynaklar</h2>
+                    <p>Bu şirkete ait runbook ve erişim kapsamları</p>
+                  </div>
+                  <span id="book-count" class="badge neutral">0 kaynak</span>
+                </div>
+                <div id="book-list" class="book-list"></div>
+              </article>
+              <article class="panel search-panel">
+                <div class="panel-heading">
+                  <div>
+                    <h2>Aramayı doğrulayın</h2>
+                    <p>Model çağırmadan kaynak eşleşmesini test edin</p>
+                  </div>
+                  <span class="badge success">0 TOKEN</span>
+                </div>
+                <form id="search-form">
+                  <label for="search-query">Test sorgusu</label>
+                  <div class="search-input">
+                    <input
+                      id="search-query"
+                      maxlength="180"
+                      required
+                      placeholder="Örn. yeni telefon MFA erişimi"
+                    /><button type="submit" class="button primary">
+                      Ara ↗
+                    </button>
+                  </div>
+                </form>
+                <p id="search-timing" class="muted search-timing">
+                  Sorgu, yalnızca bu şirketin kaynaklarında çalışır.
+                </p>
+                <div id="search-results" class="search-results">
+                  <div class="empty-state">
+                    <span>⌕</span>
+                    <h3>Kaynağı önce burada görün.</h3>
+                    <p>Arama motorunun döndürdüğü ilk üç bölüm listelenir.</p>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section
+            id="view-audit"
+            class="view"
+            hidden
+            aria-label="İşlem geçmişi"
+          >
+            <article class="panel">
+              <div class="panel-heading">
+                <div>
+                  <h2>Yönetici işlem geçmişi</h2>
+                  <p>Son 30 işlem · Çalışma alanı kapsamında</p>
+                </div>
+                <span class="badge neutral">AUDIT LOG</span>
+              </div>
+              <div id="audit-list" class="audit-list"></div>
+            </article>
+          </section>
+          <footer class="page-footer">
+            <span>LeanDesk Control</span
+            ><span
+              >Model maliyeti yerine gerçek token ve çağrı sayıları
+              gösterilir.</span
+            >
+          </footer>
+        </main>
+      </div>
+    </div>
+    <dialog id="confirm-dialog">
+      <form method="dialog">
+        <button
+          class="dialog-close icon-button"
+          value="cancel"
+          aria-label="Kapat"
+        >
+          ×</button
+        ><span class="small-label">İŞLEM ONAYI</span>
+        <h2 id="confirm-title"></h2>
+        <p id="confirm-description"></p>
+        <div class="dialog-actions">
+          <button class="button secondary" value="cancel">Vazgeç</button
+          ><button id="confirm-submit" class="button primary" type="button">
+            Onayla
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="ticket-dialog">
+      <form method="dialog">
+        <button class="dialog-close icon-button" aria-label="Kapat">×</button
+        ><span class="small-label">DESTEK KAYDI</span>
+        <h2 id="ticket-title"></h2>
+        <pre id="ticket-detail"></pre>
+        <div class="dialog-actions">
+          <button class="button secondary">Kapat</button>
+        </div>
+      </form>
+    </dialog>
+    <div id="toast" role="status" aria-live="polite" hidden></div>
+  </body>
+</html>
