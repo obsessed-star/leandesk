@@ -12,6 +12,7 @@
     "build": "eve build",
     "build:rust": "node --import tsx scripts/build-rust.ts",
     "bench:rust": "node --import tsx scripts/bench-rust.ts",
+    "bench:budget": "node --import tsx scripts/bench-budget.ts",
     "serve": "node --env-file-if-exists=.env node_modules/eve/bin/eve.js start",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test tests/*.test.ts",

@@ -190,6 +190,10 @@ Jira, Zendesk ve e-posta teslimi henüz uygulanmadı. Yerel kuyruk dış sisteme
 
 ## Doğrulama ve sınırlar
 
+Günlük çağrı bütçesi, geçmiş kullanım JSON'larını her istekte JavaScript'e taşımak yerine SQLite'taki sayısal çağrı alanı ve yalnızca pozitif çağrıları içeren indeks üzerinden hesaplanır. Kayan 24 saat sınırı ve kullanıcı izolasyonu korunur. Eski veritabanları açılırken tek seferlik, işlemsel bir geçiş uygulanır; ham kullanım kayıtları saklanır.
+
+`npm run bench:budget` aynı sonucu veren iki sorguyu 50 bin sentetik kayıt üzerinde karşılaştırır. Node 24 ölçümünde medyan süre **22,6922 ms → 0,0034 ms** oldu. Örnek çoğunlukla model çağırmayan yerel olaylar içerir; beş ısınma ve 15 tekrar kullanılır. Ölçüm yalnızca bellekteki bütçe sorgusunu kapsar; geçiş, yazma, Groq gecikmesi ve toplam yanıt süresini kapsamaz. Ek model çağrısı yapılmaz. [Ölçüm dosyası](evidence/budget-performance.json), [tekrar çalıştırılabilir betik](scripts/bench-budget.ts).
+
 ```sh
 npm run typecheck
 npm test
@@ -198,7 +202,7 @@ npm run build
 npm audit --audit-level=high
 ```
 
-Testler yetki izolasyonu, bütçe, araç sınırı, sahte kaynak, tekrar teslim, kanal eşlemesi, onay ve adaptör imzalarını kapsar. Groq birim testleri taklittir; canlı sonuç ayrı kanıt dosyasındadır. GitHub Actions anahtarsız kontrolleri çalıştırır.
+60 test; yetki izolasyonu, bütçe, eski veritabanı geçişi, kayan zaman sınırı, araç sınırı, sahte kaynak, tekrar teslim, kanal eşlemesi, onay ve adaptör imzalarını kapsar. Groq birim testleri taklittir; canlı sonuç ayrı kanıt dosyasındadır. GitHub Actions anahtarsız kontrolleri çalıştırır.
 
 Bu sürüm tek sunuculu bir pilottur. Kurumsal SSO, dağıtık kilitleme, fiziksel veri silme, dış ticket göndericisi ve gerçek şirket değerlendirmesi üretime geçiş öncesi gereklidir. SQLite kalıcı disk ister. [Mimari](ARCHITECTURE.md) ve [güvenlik](SECURITY.md) sınırları açıklar.
 

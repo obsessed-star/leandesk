@@ -49,6 +49,8 @@ In-process queues serialize case turns and delivery. Results are persisted befor
 
 ## Cost accounting
 
+The rolling call-budget probe is a prepared SQLite `SUM(calls)` over a partial covering index on `(owner, created, calls)` for positive call counts. It keeps the original strict `created > now - 24 hours` boundary and reads committed records on every check. Zero-call local events stay in the audit history without expanding this index. No application counter cache can become stale. A transactional additive migration backfills the numeric field once from historical usage JSON; new writes validate nonnegative safe integers and store JSON plus the count in one row. The benchmark in `scripts/bench-budget.ts` compares the previous JSON scan with this exact query; it does not measure provider latency or token savings.
+
 Actual provider input/output tokens and cached input are recorded. Local answer-cache hits differ from provider prompt-cache discounts. Missing usage is recorded as an unreported call and blocks further model work for that case. Errors are not silently recorded as successful zero-cost completions.
 
 Byte caps, output reservation, case usage and rolling daily call counts are checked before requests. Bytes are a conservative proxy, not an exact tokenizer. No automatic retry, critic model, embedding service or LLM summarizer is used.
