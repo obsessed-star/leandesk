@@ -1,0 +1,11 @@
+{
+  "measuredAt": "2026-10-19T09:16:50.385Z",
+  "node": "v24.19.0",
+  "mode": "actual SQLite rolling call-budget comparison",
+  "scope": "50,000 synthetic metrics split across two owners; 40 billed calls and many zero-call local events. Same result, five warm-ups, median of 15 in-memory probes. Excludes migration, writes, Groq and end-to-end response time.",
+  "rows": 50000,
+  "expectedCalls": 40,
+  "legacyMs": 22.6922,
+  "indexedMs": 0.0034,
+  "speedup": 6674.18
+}
