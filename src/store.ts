@@ -1,4 +1,4 @@
-import { DatabaseSync } from "node:sqlite";
+import { DatabaseSync, type StatementSync } from "node:sqlite";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { randomUUID } from "node:crypto";
@@ -6,6 +6,7 @@ import type { Answer, Usage } from "./contracts.ts";
 
 export class Store {
   readonly db: DatabaseSync;
+  private readonly recentCallsQuery: StatementSync;
   constructor(path = ".data/leandesk.sqlite") {
     if (path !== ":memory:") mkdirSync(dirname(path), { recursive: true });
     this.db = new DatabaseSync(path);
@@ -16,6 +17,30 @@ export class Store {
       CREATE TABLE IF NOT EXISTS tickets(id TEXT PRIMARY KEY,owner TEXT NOT NULL,body TEXT NOT NULL,status TEXT NOT NULL,created INTEGER NOT NULL);
       CREATE TABLE IF NOT EXISTS metrics(id TEXT PRIMARY KEY,owner TEXT NOT NULL,route TEXT NOT NULL,usage TEXT NOT NULL,created INTEGER NOT NULL);
       CREATE TABLE IF NOT EXISTS links(channel TEXT NOT NULL,subject TEXT NOT NULL,principal TEXT NOT NULL,PRIMARY KEY(channel,subject));`);
+    if (
+      !this.db
+        .prepare("PRAGMA table_info(metrics)")
+        .all()
+        .some((c) => c.name === "calls")
+    ) {
+      // One-time additive migration. Keep the raw usage JSON for audit/UI,
+      // but never reparse every historical row in the hot budget check.
+      this.db.exec("BEGIN IMMEDIATE");
+      try {
+        this.db
+          .exec(`ALTER TABLE metrics ADD COLUMN calls INTEGER NOT NULL DEFAULT 0 CHECK(typeof(calls)='integer' AND calls>=0);
+          UPDATE metrics SET calls=COALESCE(json_extract(usage,'$.calls'),0); COMMIT;`);
+      } catch (error) {
+        this.db.exec("ROLLBACK");
+        throw error;
+      }
+    }
+    this.db.exec(
+      "CREATE INDEX IF NOT EXISTS metrics_owner_positive_calls ON metrics(owner,created,calls) WHERE calls>0",
+    );
+    this.recentCallsQuery = this.db.prepare(
+      "SELECT COALESCE(SUM(calls),0) count FROM metrics WHERE owner=? AND created>? AND calls>0",
+    );
     if (
       !this.db
         .prepare("PRAGMA table_info(cache)")
@@ -102,9 +127,20 @@ export class Store {
     );
   }
   metric(owner: string, a: Answer) {
+    if (!Number.isSafeInteger(a.usage.calls) || a.usage.calls < 0)
+      throw Error("invalid_call_count");
     this.db
-      .prepare("INSERT INTO metrics VALUES(?,?,?,?,?)")
-      .run(randomUUID(), owner, a.route, JSON.stringify(a.usage), Date.now());
+      .prepare(
+        "INSERT INTO metrics(id,owner,route,usage,created,calls) VALUES(?,?,?,?,?,?)",
+      )
+      .run(
+        randomUUID(),
+        owner,
+        a.route,
+        JSON.stringify(a.usage),
+        Date.now(),
+        a.usage.calls,
+      );
   }
   metrics(owner: string) {
     return this.db
@@ -114,11 +150,10 @@ export class Store {
       .all(owner)
       .map((r) => ({ ...r, usage: JSON.parse(String(r.usage)) }));
   }
-  recentCalls(owner: string) {
-    return this.db
-      .prepare("SELECT usage FROM metrics WHERE owner=? AND created>?")
-      .all(owner, Date.now() - 24 * 60 * 60_000)
-      .reduce((n, r) => n + Number(JSON.parse(String(r.usage)).calls), 0);
+  recentCalls(owner: string, now = Date.now()) {
+    return Number(
+      this.recentCallsQuery.get(owner, now - 24 * 60 * 60_000)?.count ?? 0,
+    );
   }
   paused(tenant: string): boolean {
     return (
